@@ -2,10 +2,13 @@ const express = require('express')
 const mongoose = require('mongoose')
 const User = require('./model/users.model.js')
 const app = express()
+require('dotenv').config();
+
+
 
 app.use(express.json())
 
-mongoose.connect('mongodb+srv://admin:_nCd*4-3jwwG_!b@nodebackend.6loai.mongodb.net/Node-API?retryWrites=true&w=majority').then(()=>{
+mongoose.connect(process.env.MONGO_URI).then(()=>{
     console.log('connected to mongodb');
     app.listen(3000,() => {
     console.log("server is runing on port 3000");
@@ -56,20 +59,48 @@ app.post('/api/user', async (req,res) => {
     }
 })
 
+
+// This is a put api to update a user
+
 app.put('/api/user/:id', async (req, res) => {
 
     try {
-        const {id} = req.params(id);
-        const user = await User.findByIdAndUpdate(id,res.body)
+        const {id} = req.params;
+        const user = await User.findByIdAndUpdate(id,req.body, {new: true})
+        console.log(user)
         if(!user){
             return res.status(404).json({message: "User not found"})
         }
         const Updateduser = await User.findById(id);
+        console.log(user)
+
         res.status(200).json(Updateduser)
 
     } catch (error) {
         res.status(500).json({message: error.message});
-    }
+    }  
+
+
+})
+
+
+// This is a delete api to delete a user
+
+app.delete('/api/user/:id', async (req, res) => {
+
+    try {
+        const {id} = req.params;
+        const user = await User.findByIdAndDelete(id)
+        console.log(user)
+        if(!user){
+            return res.status(404).json({message: "User not found"})
+        }
+
+        res.status(200).json({message: "user deleted"})
+
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }  
 
 
 })
